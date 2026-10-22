@@ -1,0 +1,10 @@
+<section class="page"><h2>{{ id() ? 'Editar categoría' : 'Nueva categoría' }}</h2>
+@if (error()) { <div class="alerta" role="alert">{{ error() }}</div> }
+@if (cargando()) { <p>Cargando categoría…</p> } @else {
+<form class="card formulario" [formGroup]="form" (ngSubmit)="guardar()">
+<label>Nombre<input class="input" formControlName="nombre" maxlength="50" /></label>
+@if (form.controls.nombre.touched && form.controls.nombre.invalid) { <small class="error">Ingrese un nombre de 3 a 50 caracteres.</small> }
+<label>Descripción<textarea class="input" formControlName="descripcion" maxlength="200"></textarea></label>
+<label class="check"><input type="checkbox" formControlName="estado" /> Activo</label>
+<div class="acciones"><a class="btn" routerLink="/categorias">Cancelar</a><button class="btn btn-primary" [disabled]="guardando()">{{ guardando() ? 'Guardando…' : 'Guardar' }}</button></div>
+</form> }</section>

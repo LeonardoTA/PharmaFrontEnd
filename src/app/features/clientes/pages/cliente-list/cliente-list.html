@@ -1,0 +1,10 @@
+<section class="page"><header class="page-header"><h2>Clientes</h2><a class="btn btn-primary" routerLink="nuevo">+ Nuevo cliente</a></header>
+<div class="filtros"><label>Buscar en la página<input class="input" type="search" placeholder="DNI, nombres o apellidos" (input)="busqueda.set($any($event.target).value)" /></label>
+<label>Por página<select class="input" [value]="tamanio()" (change)="cambiarTamanio($any($event.target).value)"><option value="5">5</option><option value="10">10</option><option value="20">20</option></select></label></div>
+@if (error()) { <div class="alerta" role="alert">{{ error() }}</div> }
+@if (cargando()) { <p>Cargando clientes…</p> } @else {
+<table class="tabla"><thead><tr><th><button class="orden" type="button" (click)="ordenar('dni')">DNI</button></th><th><button class="orden" type="button" (click)="ordenar('apellidos')">Apellidos y nombres</button></th><th>Correo</th><th>Teléfono</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>
+@for (c of clientes(); track c.id) { <tr><td>{{ c.dni }}</td><td>{{ c.apellidos }}, {{ c.nombres }}</td><td>{{ c.email }}</td><td>{{ c.telefono || '—' }}</td><td><span class="badge" [class.inactivo]="!c.estado">{{ c.estado ? 'Activo' : 'Inactivo' }}</span></td><td><div class="acciones"><a class="btn" [routerLink]="[c.id, 'editar']">Editar</a><button class="btn btn-peligro" type="button" [disabled]="!c.estado" (click)="darDeBaja(c)">Dar de baja</button></div></td></tr>
+} @empty { <tr><td colspan="6" class="vacio">No hay clientes para mostrar.</td></tr> }</tbody></table>
+@if (resultado(); as r) { <footer class="paginador"><span>Página {{ r.pagina + 1 }} de {{ r.totalPaginas || 1 }} · {{ r.totalElementos }} clientes</span><button class="btn" [disabled]="r.pagina === 0" (click)="irA(r.pagina - 1)">Anterior</button><button class="btn" [disabled]="r.ultima" (click)="irA(r.pagina + 1)">Siguiente</button></footer> }
+}</section>

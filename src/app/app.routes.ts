@@ -12,6 +12,9 @@ export const routes: Routes = [
         title: 'Inicio',
         loadComponent: () => import('./features/inicio/inicio').then(m => m.Inicio),
       },
+      { path: 'clientes', loadChildren: () => import('./features/clientes/clientes.routes').then(m => m.CLIENTES_ROUTES) },
+      { path: 'productos', loadChildren: () => import('./features/productos/productos.routes').then(m => m.PRODUCTOS_ROUTES) },
+      { path: 'ventas', loadChildren: () => import('./features/ventas/ventas.routes').then(m => m.VENTAS_ROUTES) },
       {
         path: 'categorias',
         loadChildren: () =>

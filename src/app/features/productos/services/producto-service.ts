@@ -1,0 +1,46 @@
+import { inject, Injectable } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable, map } from 'rxjs';
+import { adaptarPagina, cargarTodas } from '../../../core/utils/paginacion';
+import { environment } from '../../../../environments/environment';
+import { PaginaResponse } from '../../../core/models/pagina-response';
+import { Direccion, OrdenProducto, Producto, ProductoRequest } from
+'../models/producto.model';
+
+@Injectable({ providedIn: 'root' })
+export class ProductoService {
+  private readonly http = inject(HttpClient);
+  private readonly url = `${environment.apiUrl}/productos`;
+
+  listar(pagina: number, tamanio: number, ordenarPor: OrdenProducto,
+         direccion: Direccion): Observable<PaginaResponse<Producto>> {
+    const params = new HttpParams()
+      .set('pagina', pagina)
+      .set('tamanio', tamanio)
+      .set('ordenarPor', ordenarPor)
+      .set('direccion', direccion);
+    return this.http.get<Producto[] | PaginaResponse<Producto>>(this.url, { params }).pipe(
+      map(r => adaptarPagina(r, pagina, tamanio, ordenarPor as keyof Producto, direccion)));
+  }
+
+  listarTodos(): Observable<Producto[]> {
+    return cargarTodas(pagina => this.listar(pagina, 100, "nombre", 'asc'));
+  }
+
+  obtener(id: number): Observable<Producto> {
+    return this.http.get<Producto>(`${this.url}/${id}`);
+  }
+
+  crear(dto: ProductoRequest): Observable<Producto> {
+    return this.http.post<Producto>(this.url, dto);
+  }
+
+  actualizar(id: number, dto: ProductoRequest): Observable<Producto> {
+    return this.http.put<Producto>(`${this.url}/${id}`, dto);
+  }
+
+  /** Baja lógica: el backend marca estado = false. */
+  darDeBaja(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.url}/${id}`);
+  }
+}

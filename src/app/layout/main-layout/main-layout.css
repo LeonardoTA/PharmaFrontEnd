@@ -1,0 +1,22 @@
+.shell { min-height: 100vh; display: grid; grid-template-columns: 210px minmax(0, 1fr); grid-template-rows: 58px 1fr; grid-template-areas: "header header" "sidebar main"; }
+.area-header { grid-area: header; display: flex; align-items: center; gap: 24px; background: #0f2e5c; padding: 0 20px; color: #fff; }
+.area-header a { color: #fff; text-decoration: none; }
+.area-header .marca { color: #f2a900; font-weight: 800; font-size: 20px; }
+.area-header nav { display: flex; gap: 16px; }
+.usuario { margin-left: auto; font-size: 13px; }
+.menu-toggle { border: 0; background: none; color: #fff; font-size: 21px; cursor: pointer; }
+.area-sidebar { grid-area: sidebar; background: #fff; padding: 16px 12px; border-right: 1px solid #e5e7eb; }
+.area-sidebar p { font-size: 11px; color: #6b7280; margin: 0 8px 12px; }
+.area-sidebar nav { display: flex; flex-direction: column; gap: 4px; }
+.area-sidebar a { padding: 10px; border-radius: 7px; text-decoration: none; color: #24354a; }
+.area-sidebar a.activo { background: #0f2e5c; color: #fff; }
+.area-main { grid-area: main; min-width: 0; padding: 24px; background: #f4f6fb; }
+.menu-cerrado { grid-template-columns: 0 minmax(0,1fr); }
+.menu-cerrado .area-sidebar { display: none; }
+@media (max-width: 700px) { .shell { grid-template-columns: 150px minmax(0,1fr); } .area-main { padding: 12px; } .area-header { gap: 12px; } .area-header nav { display: none; } .menu-cerrado { grid-template-columns: 0 minmax(0,1fr); } }
+/* Sesión 9, paso 8: al imprimir solo queda la página. */
+@media print {
+  .shell { display: block; min-height: 0; }
+  .area-header, .area-sidebar { display: none; }
+  .area-main { padding: 0; background: #fff; }
+}
