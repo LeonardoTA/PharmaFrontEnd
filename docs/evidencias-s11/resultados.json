@@ -1,0 +1,137 @@
+{
+  "actividad": "Guía práctica S11, paso 11",
+  "fecha": "22/10/2026",
+  "pruebas": 16,
+  "pasan": 16,
+  "fallan": 0,
+  "records": [
+    {
+      "numero": 1,
+      "prueba": "Ruta sin sesión",
+      "resultado": "Se abre /login?returnUrl=%2Fventas.",
+      "url": "http://localhost:4200/login?returnUrl=%2Fventas",
+      "estado": "Pasa",
+      "captura": "01.png"
+    },
+    {
+      "numero": 2,
+      "prueba": "Formulario vacío",
+      "resultado": "Ambos campos muestran validación y no se envía una petición.",
+      "url": "http://localhost:4200/login?returnUrl=%2Fventas",
+      "estado": "Pasa",
+      "captura": "02.png"
+    },
+    {
+      "numero": 3,
+      "prueba": "Contraseña incorrecta",
+      "resultado": "La API responde 401; el login conserva la página y muestra el mensaje genérico sin número.",
+      "url": "http://localhost:4200/login?returnUrl=%2Fventas",
+      "estado": "Pasa",
+      "captura": "03.png"
+    },
+    {
+      "numero": 4,
+      "prueba": "Usuario inactivo",
+      "resultado": "Mismo mensaje genérico y mismo estado HTTP que las credenciales incorrectas.",
+      "url": "http://localhost:4200/login?returnUrl=%2Fventas",
+      "estado": "Pasa",
+      "captura": "04.png"
+    },
+    {
+      "numero": 5,
+      "prueba": "Login de vendedor y retorno",
+      "resultado": "Regresa a /ventas; encabezado con nombre, rol y hora de expiración.",
+      "url": "http://localhost:4200/ventas",
+      "estado": "Pasa",
+      "captura": "05.png"
+    },
+    {
+      "numero": 6,
+      "prueba": "Authorization en Red",
+      "resultado": "GET /productos lleva Bearer; las peticiones POST /auth/login no llevan Authorization.",
+      "url": "http://localhost:4200/productos?categoriaId=32",
+      "estado": "Pasa",
+      "captura": "06.png"
+    },
+    {
+      "numero": 7,
+      "prueba": "Almacenamiento de sesión",
+      "resultado": "Clave pharmasoft.sesion con token, expiraEn, username, roles y permisos.",
+      "url": "http://localhost:4200/productos?categoriaId=32",
+      "estado": "Pasa",
+      "captura": "07.png"
+    },
+    {
+      "numero": 8,
+      "prueba": "Recarga de Productos",
+      "resultado": "F5 conserva el usuario, la sesión y la ruta /productos.",
+      "url": "http://localhost:4200/productos?categoriaId=32",
+      "estado": "Pasa",
+      "captura": "08.png"
+    },
+    {
+      "numero": 9,
+      "prueba": "Productos como vendedor",
+      "resultado": "No aparecen Nuevo producto ni la columna Acciones.",
+      "url": "http://localhost:4200/productos?categoriaId=32",
+      "estado": "Pasa",
+      "captura": "09.png"
+    },
+    {
+      "numero": 10,
+      "prueba": "Ruta de escritura sin permiso",
+      "resultado": "Acceso denegado por permisoGuard; conserva la sesión y no muestra el número del error.",
+      "url": "http://localhost:4200/acceso-denegado",
+      "estado": "Pasa",
+      "captura": "10.png"
+    },
+    {
+      "numero": 11,
+      "prueba": "Login con sesión activa",
+      "resultado": "invitadoGuard redirige a /inicio.",
+      "url": "http://localhost:4200/inicio",
+      "estado": "Pasa",
+      "captura": "11.png"
+    },
+    {
+      "numero": 12,
+      "prueba": "Cerrar sesión",
+      "resultado": "Vuelve al login y elimina pharmasoft.sesion.",
+      "url": "http://localhost:4200/login",
+      "estado": "Pasa",
+      "captura": "12.png"
+    },
+    {
+      "numero": 13,
+      "prueba": "Ventas como almacén",
+      "resultado": "Ventas no aparece en el menú y su URL directa muestra Acceso denegado.",
+      "url": "http://localhost:4200/acceso-denegado",
+      "estado": "Pasa",
+      "captura": "13.png"
+    },
+    {
+      "numero": 14,
+      "prueba": "Supervisor y unión de permisos",
+      "resultado": "Ve Ventas, Nuevo producto, Editar y Dar de baja.",
+      "url": "http://localhost:4200/productos?categoriaId=32",
+      "estado": "Pasa",
+      "captura": "14.png"
+    },
+    {
+      "numero": 15,
+      "prueba": "Token modificado y F5",
+      "resultado": "La API rechaza el JWT con 401; se elimina la sesión y se muestra Su sesión expiró.",
+      "url": "http://localhost:4200/login?expirada=1&returnUrl=%2Fproductos%3FcategoriaId%3D32",
+      "estado": "Pasa",
+      "captura": "15.png"
+    },
+    {
+      "numero": 16,
+      "prueba": "Expiración real de un minuto",
+      "resultado": "Token emitido con duración de 60 s; cierre automático tras 60 s. Login con aviso y returnUrl=/productos. Al iniciar sesión otra vez regresa a Productos.",
+      "url": "http://localhost:4200/login?expirada=1&returnUrl=%2Fproductos",
+      "estado": "Pasa",
+      "captura": "16.png"
+    }
+  ]
+}
