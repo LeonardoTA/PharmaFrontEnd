@@ -1,10 +1,11 @@
+import { SiPermiso } from '../../../../shared/directives/si-permiso';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Categoria } from '../../models/categoria.model';
 import { CategoriaService } from '../../services/categoria-service';
 import { mensajeError } from '../../../../core/utils/http-error';
-@Component({ selector: 'app-categoria-list', imports: [RouterLink], templateUrl: './categoria-list.html' })
+@Component({ selector: 'app-categoria-list', imports: [SiPermiso, RouterLink], templateUrl: './categoria-list.html' })
 export class CategoriaList implements OnInit {
   private readonly servicio = inject(CategoriaService);
   protected readonly categorias = signal<Categoria[]>([]);

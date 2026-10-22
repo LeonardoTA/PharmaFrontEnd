@@ -1,3 +1,4 @@
+import { SiPermiso } from '../../../../shared/directives/si-permiso';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -6,7 +7,7 @@ import { ClienteService } from '../../services/cliente-service';
 import { PaginaResponse } from '../../../../core/models/pagina-response';
 import { mensajeError } from '../../../../core/utils/http-error';
 import { coincide } from '../../../../core/utils/texto';
-@Component({ selector: 'app-cliente-list', imports: [RouterLink], templateUrl: './cliente-list.html' })
+@Component({ selector: 'app-cliente-list', imports: [SiPermiso, RouterLink], templateUrl: './cliente-list.html' })
 export class ClienteList implements OnInit {
   private readonly servicio = inject(ClienteService);
   protected readonly pagina = signal(0);
