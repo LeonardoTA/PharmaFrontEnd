@@ -13,5 +13,5 @@
       <a [routerLink]="item.ruta" routerLinkActive="activo" [routerLinkActiveOptions]="{ exact: item.ruta === '/inicio' }"><span>{{ item.icono }}</span> {{ item.etiqueta }}</a>
     }
   </nav></aside>
-  <main class="area-main"><router-outlet /></main>
+  <main class="area-main"><app-aviso-sesion /><router-outlet /></main>
 </div>

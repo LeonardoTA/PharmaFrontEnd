@@ -3,9 +3,9 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { AuthService } from '../../core/auth/auth-service';
 import { MENU } from '../../core/config/menu';
-import { environment } from '../../../environments/environment';
+import { AvisoSesion } from '../../shared/components/aviso-sesion/aviso-sesion';
 @Component({
-  selector: 'app-main-layout', imports: [RouterOutlet, RouterLink, RouterLinkActive, DatePipe],
+  selector: 'app-main-layout', imports: [RouterOutlet, RouterLink, RouterLinkActive, DatePipe, AvisoSesion],
   templateUrl: './main-layout.html', styleUrl: './main-layout.css',
 })
 export class MainLayout {

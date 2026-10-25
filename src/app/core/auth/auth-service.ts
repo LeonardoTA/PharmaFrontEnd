@@ -1,4 +1,4 @@
-import { computed, inject, Service, signal } from '@angular/core';
+import { computed, DestroyRef, inject, Service, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { map, Observable, tap } from 'rxjs';
@@ -21,10 +21,15 @@ export class AuthService {
   private readonly router = inject(Router);
   private readonly url = `${environment.apiUrl}/auth`;
   private readonly sesionActual = signal<Sesion | null>(this.leerSesionGuardada());
+  private intervalo?: ReturnType<typeof setInterval>;
+  readonly segundosRestantes = signal(0);
+  readonly avisoOculto = signal(false);
+  readonly porVencer = computed(() => this.autenticado() && this.segundosRestantes() <= 120);
   private temporizador?: ReturnType<typeof setTimeout>;
   readonly sesion = this.sesionActual.asReadonly();
   readonly autenticado = computed(() => this.sesionActual() !== null);
   constructor() {
+    inject(DestroyRef).onDestroy(() => { clearTimeout(this.temporizador); clearInterval(this.intervalo); });
     const sesion = this.sesionActual();
     if (sesion) this.programarExpiracion(sesion);
   }
@@ -49,6 +54,10 @@ export class AuthService {
    */
   cerrarSesion(motivo?: 'expirada', volverA?: string): void {
     clearTimeout(this.temporizador);
+    clearInterval(this.intervalo);
+    this.intervalo = undefined;
+    this.segundosRestantes.set(0);
+    this.avisoOculto.set(false);
     sessionStorage.removeItem(CLAVE_SESION);
     this.sesionActual.set(null);
     const queryParams: Record<string, string> = {};
@@ -67,11 +76,16 @@ export class AuthService {
   }
   private iniciar(sesion: Sesion): void {
     sessionStorage.setItem(CLAVE_SESION, JSON.stringify(sesion));
+    this.avisoOculto.set(false);
     this.sesionActual.set(sesion);
     this.programarExpiracion(sesion);
   }
   private programarExpiracion(sesion: Sesion): void {
     clearTimeout(this.temporizador);
+    clearInterval(this.intervalo);
+    const actualizar = () => this.segundosRestantes.set(Math.max(0, Math.floor((sesion.expiraEn - Date.now()) / 1000)));
+    actualizar();
+    this.intervalo = setInterval(actualizar, 1000);
     const restante = sesion.expiraEn - Date.now();
     this.temporizador = setTimeout(
       () => this.cerrarSesion('expirada', this.router.url),
