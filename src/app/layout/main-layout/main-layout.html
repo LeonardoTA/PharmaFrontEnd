@@ -4,7 +4,7 @@
     <a routerLink="/inicio" class="marca">PharmaSoft</a>
     <nav aria-label="Navegación principal"><a routerLink="/inicio">Inicio</a><a [href]="swaggerUrl" target="_blank" rel="noopener">API</a></nav>
     @if (auth.sesion(); as s) {
-      <div class="usuario"><span class="nombre">{{ s.nombreCompleto }}</span><span class="detalle">{{ s.roles.join(' · ') }} · expira {{ s.expiraEn | date: 'HH:mm' }}</span></div>
+      <div class="usuario"><span class="nombre">{{ s.nombreCompleto }} · <a routerLink="/mi-cuenta">Mi cuenta</a></span><span class="detalle">{{ s.roles.join(' · ') }} · expira {{ s.expiraEn | date: 'HH:mm' }}</span></div>
       <button type="button" class="btn-salir" (click)="salir()">Cerrar sesión</button>
     }
   </header>

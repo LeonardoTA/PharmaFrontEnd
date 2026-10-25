@@ -33,3 +33,6 @@ export interface Sesion {
   roles: string[];
   permisos: Permiso[];
 }
+
+/** Datos actuales que devuelve GET /auth/me, sin JWT ni contraseña. */
+export interface PerfilUsuario { username: string; nombreCompleto: string; roles: string[]; permisos: Permiso[]; }

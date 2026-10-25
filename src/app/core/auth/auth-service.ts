@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { map, Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { LoginRequest, LoginResponse, Permiso, Sesion } from './auth.model';
+import { LoginRequest, LoginResponse, Permiso, Sesion, PerfilUsuario } from './auth.model';
 /** Clave con la que se guarda la sesión en sessionStorage. */
 const CLAVE_SESION = 'pharmasoft.sesion';
 /**
@@ -46,6 +46,9 @@ export class AuthService {
       })),
       tap(sesion => this.iniciar(sesion)),
     );
+  }
+  obtenerPerfil(): Observable<PerfilUsuario> {
+    return this.http.get<PerfilUsuario>(`${this.url}/me`);
   }
   /**
    * Cierra la sesión y vuelve al login.
