@@ -25,6 +25,8 @@ export interface LoginResponse {
 }
 /** Sesión guardada en el navegador. */
 export interface Sesion {
+  /** Oculta el aviso solo durante esta misma sesión, incluso tras F5. */
+  avisoOculto?: boolean;
   token: string;
   /** Momento de expiración en milisegundos (Date.now() + expiraEnSegundos * 1000). */
   expiraEn: number;

@@ -26,6 +26,7 @@ export class Login {
     password: ['', [Validators.required, Validators.maxLength(72)]],
   });
   ingresar(): void {
+    if (this.enviando()) return;
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;

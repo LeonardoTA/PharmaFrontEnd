@@ -23,7 +23,7 @@ export class AuthService {
   private readonly sesionActual = signal<Sesion | null>(this.leerSesionGuardada());
   private intervalo?: ReturnType<typeof setInterval>;
   readonly segundosRestantes = signal(0);
-  readonly avisoOculto = signal(false);
+  readonly avisoOculto = signal(this.sesionActual()?.avisoOculto ?? false);
   readonly porVencer = computed(() => this.autenticado() && this.segundosRestantes() <= 120);
   private temporizador?: ReturnType<typeof setTimeout>;
   readonly sesion = this.sesionActual.asReadonly();
@@ -46,6 +46,11 @@ export class AuthService {
       })),
       tap(sesion => this.iniciar(sesion)),
     );
+  }
+  ocultarAviso(): void {
+    this.avisoOculto.set(true);
+    const sesion = this.sesionActual();
+    if (sesion) sessionStorage.setItem(CLAVE_SESION, JSON.stringify({ ...sesion, avisoOculto: true }));
   }
   obtenerPerfil(): Observable<PerfilUsuario> {
     return this.http.get<PerfilUsuario>(`${this.url}/me`);

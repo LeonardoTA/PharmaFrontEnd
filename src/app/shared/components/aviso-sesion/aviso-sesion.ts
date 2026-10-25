@@ -6,7 +6,7 @@ import { AuthService } from '../../../core/auth/auth-service';
     <section class="aviso-sesion" role="status" aria-live="polite">
       <span>⚠ Su sesión vence en <strong>{{ cuenta() }}</strong>.</span>
       <button type="button" class="btn" (click)="auth.cerrarSesion()">Cerrar sesión ahora</button>
-      <button type="button" class="cerrar" aria-label="Ocultar aviso de sesión" (click)="auth.avisoOculto.set(true)">×</button>
+      <button type="button" class="cerrar" aria-label="Ocultar aviso de sesión" (click)="auth.ocultarAviso()">×</button>
     </section>
   }`,
   styles: `.aviso-sesion { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 12px 16px; margin-bottom: 18px; border: 1px solid #e9ab27; border-radius: 8px; background: #fff6dc; color: #7a5200; box-shadow: 0 2px 5px #12315a18; }
