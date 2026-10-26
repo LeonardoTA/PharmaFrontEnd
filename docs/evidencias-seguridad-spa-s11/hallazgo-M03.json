@@ -1,0 +1,11 @@
+{
+  "id": "M-03",
+  "fecha": "25/10/2026",
+  "severidad": "Baja",
+  "evidence": "M-03_nombre_inicial.png",
+  "obtenido": "La tarjeta no muestra el nombre completo; el encabezado sí lo muestra desde la sesión.",
+  "causa": "GET /auth/me devuelve empleadoNombre en UsuarioResponseDTO, mientras PerfilUsuario y la plantilla esperan nombreCompleto.",
+  "archivo": "src/app/core/auth/auth-service.ts",
+  "metodo": "obtenerPerfil",
+  "correccion": "Adaptar empleadoNombre a nombreCompleto en el servicio, conservando el backend."
+}
