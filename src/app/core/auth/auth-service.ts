@@ -53,7 +53,9 @@ export class AuthService {
     if (sesion) sessionStorage.setItem(CLAVE_SESION, JSON.stringify({ ...sesion, avisoOculto: true }));
   }
   obtenerPerfil(): Observable<PerfilUsuario> {
-    return this.http.get<PerfilUsuario>(`${this.url}/me`);
+    return this.http.get<PerfilUsuario & { empleadoNombre?: string }>(`${this.url}/me`).pipe(
+      map(perfil => ({ ...perfil, nombreCompleto: perfil.nombreCompleto ?? perfil.empleadoNombre ?? '' })),
+    );
   }
   /**
    * Cierra la sesión y vuelve al login.
