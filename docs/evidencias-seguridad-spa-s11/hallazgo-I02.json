@@ -1,0 +1,13 @@
+{
+  "id": "I-02",
+  "fecha": "25/10/2026",
+  "status": 502,
+  "obtenido": "No se pudo completar la operación.",
+  "esperado": "Mensaje de conexión y sesión vigente",
+  "evidence": "I-02_inicial.png",
+  "severidad": "Baja",
+  "archivo": "src/app/core/utils/http-error.ts",
+  "metodo": "mensajeError",
+  "causa": "El proxy de desarrollo devuelve HTTP 502 al rechazar la conexión; el utilitario solo reconocía status 0 como conexión fallida.",
+  "correccion": "Tratar 502, 503 y 504 como indisponibilidad de PharmaBackend, conservando la sesión."
+}

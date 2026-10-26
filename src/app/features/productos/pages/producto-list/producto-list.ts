@@ -1,3 +1,4 @@
+import { SiPermiso } from '../../../../shared/directives/si-permiso';
 import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -11,7 +12,7 @@ import { ProductoService } from '../../services/producto-service';
 
 @Component({
   selector: 'app-producto-list',
-  imports: [RouterLink, CurrencyPipe],
+  imports: [SiPermiso, RouterLink, CurrencyPipe],
   templateUrl: './producto-list.html',
   styleUrl: './producto-list.css',
 })
