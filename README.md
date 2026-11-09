@@ -1,59 +1,81 @@
-# PharmaFrontend
+# PharmaFrontend — SPA de PharmaSoft
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.2.0.
+Aplicación Web de Página Única (SPA) para la gestión de ventas y farmacia desarrollada con Angular 19+ (signals, control flow `@if` / `@for`, `@defer`, standalone components y lazy routing).
 
-## Development server
+---
 
-To start a local development server, run:
+## 🚀 Despliegue en producción
 
-```bash
-ng serve
+### 1. Arquitectura de Despliegue y Puertos
+
+```mermaid
+flowchart LR
+    Browser["Navegador Cliente"] -->|HTTP / 8081| Nginx["Nginx Web Server (8081)"]
+    Nginx -->|Archivos Estáticos Hash| Dist["dist/pharma-frontend/browser"]
+    Nginx -->|Proxy Reverso /api/**| Backend["PharmaBackend (8082)"]
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+| Componente | Rol en Producción | Puerto |
+| :--- | :--- | :--- |
+| **Nginx Web Server** | Servidor HTTP de estáticos con caché + Proxy reverso | `8081` |
+| **PharmaBackend** | Servidor API REST Spring Boot | `8082` |
 
-## Code scaffolding
+---
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+### 2. Variables de Entorno y Configuración
+* `src/environments/environment.prod.ts`:
+  ```typescript
+  export const environment = {
+    production: true,
+    apiUrl: '/api/v1' // Se enruta por el proxy reverso de Nginx al backend (8082)
+  };
+  ```
 
+---
+
+### 3. Procedimiento de Construcción y Despliegue
+
+#### A. Construcción del Paquete de Producción
 ```bash
-ng generate component component-name
+# Compilar con optimizaciones, minificación y cálculo de estadísticas
+npm run build -- --configuration production --stats-json
+```
+Los artefactos estáticos generados se guardan en `dist/pharma-frontend/browser/` con hashes únicos en sus nombres (`main-[hash].js`, `chunk-[hash].js`, `styles-[hash].css`).
+
+#### B. Despliegue en Servidor Nginx (Docker)
+```bash
+# Iniciar contenedor Nginx con la configuración de caché
+docker compose up -d --build nginx
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+#### C. Procedimiento de Rollback
+1. Si un despliegue presenta incidencias en la SPA:
+   ```bash
+   git checkout HEAD~1
+   npm run build -- --configuration production
+   docker compose restart nginx
+   ```
+2. Gracias a la política de versionamiento por hash de archivos y `Cache-Control: no-cache` en `index.html`, los usuarios recibirán de inmediato la versión previa sin necesidad de limpiar la caché del navegador.
 
-```bash
-ng generate --help
-```
+---
 
-## Building
+### 4. Matriz de Buenas Prácticas de Producción
 
-To build the project run:
+| Buena Práctica | Estado | Detalle y Acción Pendiente |
+| :--- | :---: | :--- |
+| **Presupuestos de tamaño (`budgets`)** | **Cumple** | Configurado en `angular.json` con advertencias en 500 kB y error en 1 MB. |
+| **Carga perezosa (Lazy loading)** | **Cumple** | Todas las features (`ventas`, `productos`, `categorias`, `clientes`) se cargan con `loadChildren`. |
+| **Carga diferida (`@defer`)** | **Cumple** | Reporte de más vendidos en `inicio.html` y comprobante de venta en `venta-detalle.html` cargan con `@defer`. |
+| **Políticas de caché HTTP (Nginx)** | **Cumple** | `index.html` con `no-cache`, y assets con hash (`*.js`, `*.css`) con `max-age=31536000, immutable`. |
+| **Trazabilidad en errores (`requestId`)** | **Cumple** | `mensajeError` extrae el `requestId` y lo muestra en la interfaz para auditoría y soporte. |
+| **Seguridad de rutas (Guards)** | **Cumple** | `authGuard` protege rutas privadas y `permisoGuard` valida permisos granulares del token JWT. |
 
-```bash
-ng build
-```
+---
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+### 5. Recomendaciones para los Tres Locales de la Botica
+1. **Compresión Brotli / Gzip en Nginx:**
+   * Activar `brotli on;` y `gzip on;` en el proxy Nginx para reducir el tamaño de transferencia de los chunks JS en conexiones lentas de sucursales.
+2. **Estrategia de Precarga Selectiva (`PreloadAllModules`):**
+   * Configurar `withPreloading(PreloadAllModules)` para que los módulos pesados como Ventas se descarguen silenciosamente en segundo plano tras el login, acelerando la atención en caja.
+3. **PWA / Service Worker para Modo Offline Básico:**
+   * Evaluar la implementación de `@angular/service-worker` para que la aplicación cargue incluso ante caídas momentáneas de conectividad en los locales.
