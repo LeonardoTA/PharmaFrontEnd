@@ -10,6 +10,5 @@ export function mensajeError(error: HttpErrorResponse): string {
   }
   const validaciones = Object.values(erroresDeValidacion(error));
   const base = [error.error?.message ?? error.error?.mensaje ?? 'No se pudo completar la operación.', ...validaciones].join(' ');
-  const requestId = error.error?.requestId || error.headers?.get('X-Request-Id');
-  return requestId ? `${base} (Código de seguimiento: ${requestId})` : base;
+  return base;
 }

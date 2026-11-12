@@ -1,9 +1,11 @@
+import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Paginador } from '../../../../shared/components/paginador/paginador';
 import { SiPermiso } from '../../../../shared/directives/si-permiso';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, input, linkedSignal, numberAttribute, effect, signal } from '@angular/core';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { PaginaResponse } from '../../../../core/models/pagina-response';
 import { mensajeError } from '../../../../core/utils/http-error';
 import { Cliente } from '../../../clientes/models/cliente.model';
@@ -13,20 +15,26 @@ import { VentaService } from '../../services/venta-service';
 
 @Component({
   selector: 'app-venta-list',
-  imports: [SiPermiso, ReactiveFormsModule, RouterLink, CurrencyPipe, DatePipe],
+  imports: [SiPermiso, ReactiveFormsModule, RouterLink, CurrencyPipe, DatePipe, Paginador],
   templateUrl: './venta-list.html',
   styleUrl: './venta-list.css',
 })
-export class VentaList implements OnInit {
+export class VentaList {
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly ventaService = inject(VentaService);
   private readonly clienteService = inject(ClienteService);
 
   protected readonly clientes = signal<Cliente[]>([]);
-  protected readonly resultado = signal<PaginaResponse<Venta> | null>(null);
-  protected readonly pagina = signal(0);
-  protected readonly cargando = signal(false);
-  protected readonly error = signal<string | null>(null);
+  private readonly router = inject(Router);
+  readonly pagina = input(0, { transform: (v: unknown) => numberAttribute(v, 0) });
+  readonly tamanio = input(20, { transform: (v: unknown) => numberAttribute(v, 20) });
+  readonly clienteId = input<string>();
+  readonly estado = input<EstadoVenta>();
+  readonly desde = input<string>();
+  readonly hasta = input<string>();
+  readonly orden = input('fechaRegistro', { transform: (v: string | undefined) => v || 'fechaRegistro' });
+  readonly dir = input('desc' as 'asc' | 'desc', { transform: (v: 'asc' | 'desc' | undefined) => v || 'desc' });
+  protected readonly errorAccion = signal<string | null>(null);
 
   protected readonly filtros = this.fb.group({
     clienteId: this.fb.control<number | null>(null),
@@ -35,7 +43,18 @@ export class VentaList implements OnInit {
     hasta: this.fb.control<string | null>(null),
   });
 
-  protected readonly filtrosAplicados = signal<FiltroVentas>({ clienteId: null, estado: null, desde: null, hasta: null });
+  protected readonly filtrosAplicados = computed<FiltroVentas>(() => ({ clienteId: Number(this.clienteId()) || null, estado: this.estado() || null, desde: this.desde() || null, hasta: this.hasta() || null }));
+  protected readonly ventas = rxResource({
+    params: () => ({ filtro: this.filtrosAplicados(), pagina: this.pagina(), tamanio: this.tamanio(), orden: this.orden(), dir: this.dir() }),
+    stream: ({ params: p }) => this.ventaService.buscar(p.filtro, p.pagina, p.tamanio, p.orden, p.dir),
+  });
+  protected readonly resultado = linkedSignal<PaginaResponse<Venta> | undefined, PaginaResponse<Venta> | undefined>({
+    source: () => this.ventas.hasValue() ? this.ventas.value() : undefined,
+    computation: (nueva, previa) => nueva ?? previa?.value,
+  });
+  protected error(): string | null {
+    return this.errorAccion() ?? (this.ventas.error() ? mensajeError(this.ventas.error() as HttpErrorResponse) : null);
+  }
   protected readonly ahora = signal(new Date());
 
   /** Suma de los totales de la página mostrada (solo ventas REGISTRADAS). */
@@ -62,50 +81,27 @@ export class VentaList implements OnInit {
     setTimeout(() => window.print());
   }
 
-  ngOnInit(): void {
-    this.clienteService.listarTodos().subscribe({
-      next: clientes => this.clientes.set(clientes),
-      error: (err: HttpErrorResponse) => this.error.set(mensajeError(err)),
+  constructor() {
+    this.clienteService.listarTodos().pipe(takeUntilDestroyed()).subscribe({
+      next: clientes => this.clientes.set(clientes), error: err => this.errorAccion.set(mensajeError(err)),
     });
-    this.cargar();
+    effect(() => this.filtros.reset(this.filtrosAplicados(), { emitEvent: false }));
   }
-
-
   buscar(): void {
-    const { desde, hasta } = this.filtros.getRawValue();
-    if (desde && hasta && desde > hasta) {
-      this.error.set('La fecha «desde» no puede ser posterior a la fecha «hasta».');
-      return;
+    const filtro = this.filtros.getRawValue();
+    if (filtro.desde && filtro.hasta && filtro.desde > filtro.hasta) {
+      this.errorAccion.set('La fecha desde no puede ser posterior a la fecha hasta.'); return;
     }
-    this.filtrosAplicados.set(this.filtros.getRawValue());
-    this.pagina.set(0);
-    this.cargar();
+    this.errorAccion.set(null);
+    this.navegar({ ...filtro, pagina: 0 });
   }
-
-  limpiar(): void {
-    this.filtros.reset();
-    this.buscar();
+  limpiar(): void { this.filtros.reset(); this.buscar(); }
+  irA(pagina: number): void { this.navegar({ pagina }); }
+  cambiarTamanio(tamanio: number): void { this.navegar({ tamanio, pagina: 0 }); }
+  ordenarPor(orden: string): void {
+    this.navegar({ orden, dir: this.orden() === orden && this.dir() === 'asc' ? 'desc' : 'asc', pagina: 0 });
   }
-
-  irA(pagina: number): void {
-    this.pagina.set(pagina);
-    this.cargar();
-  }
-
-  private cargar(): void {
-    const filtro = this.filtrosAplicados();
-    this.resultado.set(null);
-    this.cargando.set(true);
-    this.error.set(null);
-    this.ventaService.buscar(filtro, this.pagina(), 10).subscribe({
-      next: r => {
-        this.resultado.set(r);
-        this.cargando.set(false);
-      },
-      error: (err: HttpErrorResponse) => {
-        this.error.set(mensajeError(err));
-        this.cargando.set(false);
-      },
-    });
+  private navegar(cambios: Record<string, string | number | null>): void {
+    this.router.navigate([], { queryParams: cambios, queryParamsHandling: 'merge' });
   }
 }
