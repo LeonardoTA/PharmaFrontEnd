@@ -1,10 +1,10 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
-import { adaptarPagina, cargarTodas } from '../../../core/utils/paginacion';
+import { Observable } from 'rxjs';
+import { cargarTodas } from '../../../core/utils/paginacion';
 import { environment } from '../../../../environments/environment';
-import { PaginaResponse } from '../../../core/models/pagina-response';
-import { Direccion, OrdenProducto, Producto, ProductoRequest } from
+import { ConsultaPagina, Pagina } from '../../../core/models/pagina';
+import { Producto, ProductoRequest } from
 '../models/producto.model';
 
 @Injectable({ providedIn: 'root' })
@@ -12,19 +12,15 @@ export class ProductoService {
   private readonly http = inject(HttpClient);
   private readonly url = `${environment.apiUrl}/productos`;
 
-  listar(pagina: number, tamanio: number, ordenarPor: OrdenProducto,
-         direccion: Direccion): Observable<PaginaResponse<Producto>> {
-    const params = new HttpParams()
-      .set('pagina', pagina)
-      .set('tamanio', tamanio)
-      .set('ordenarPor', ordenarPor)
-      .set('direccion', direccion);
-    return this.http.get<Producto[] | PaginaResponse<Producto>>(this.url, { params }).pipe(
-      map(r => adaptarPagina(r, pagina, tamanio, ordenarPor as keyof Producto, direccion)));
+  listar(c: ConsultaPagina, categoriaId?: number): Observable<Pagina<Producto>> {
+    let params = new HttpParams()
+      .set('pagina', c.pagina).set('tamanio', c.tamanio)
+      .set('ordenarPor', c.ordenarPor).set('direccion', c.direccion);
+    if (categoriaId) params = params.set('categoriaId', categoriaId);
+    return this.http.get<Pagina<Producto>>(this.url, { params });
   }
-
   listarTodos(): Observable<Producto[]> {
-    return cargarTodas(pagina => this.listar(pagina, 100, "nombre", 'asc'));
+    return cargarTodas(pagina => this.listar({ pagina, tamanio: 100, ordenarPor: 'nombre', direccion: 'asc' }));
   }
 
   obtener(id: number): Observable<Producto> {

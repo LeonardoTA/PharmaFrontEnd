@@ -1,105 +1,61 @@
-import { SiPermiso } from '../../../../shared/directives/si-permiso';
-import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
-import { CurrencyPipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { RouterLink } from '@angular/router';
-import { PaginaResponse } from '../../../../core/models/pagina-response';
+import { Component, inject, input, linkedSignal, numberAttribute, signal } from '@angular/core';
+import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Router, RouterLink } from '@angular/router';
+import { CurrencyPipe } from '@angular/common';
+import { SiPermiso } from '../../../../shared/directives/si-permiso';
+import { Pagina } from '../../../../core/models/pagina';
+import { Paginador } from '../../../../shared/components/paginador/paginador';
 import { mensajeError } from '../../../../core/utils/http-error';
-import { Categoria } from '../../../categorias/models/categoria.model';
 import { CategoriaService } from '../../../categorias/services/categoria-service';
-import { Direccion, OrdenProducto, Producto } from '../../models/producto.model';
+import { Categoria } from '../../../categorias/models/categoria.model';
+import { Producto } from '../../models/producto.model';
 import { ProductoService } from '../../services/producto-service';
-
 @Component({
-  selector: 'app-producto-list',
-  imports: [SiPermiso, RouterLink, CurrencyPipe],
-  templateUrl: './producto-list.html',
-  styleUrl: './producto-list.css',
+  selector: 'app-producto-list', imports: [SiPermiso, RouterLink, CurrencyPipe, Paginador],
+  templateUrl: './producto-list.html', styleUrl: './producto-list.css',
 })
-export class ProductoList implements OnInit {
+export class ProductoList {
   private readonly productoService = inject(ProductoService);
   private readonly categoriaService = inject(CategoriaService);
-
+  private readonly router = inject(Router);
+  readonly pagina = input(0, { transform: (v: unknown) => numberAttribute(v, 0) });
+  readonly tamanio = input(20, { transform: (v: unknown) => numberAttribute(v, 20) });
+  readonly orden = input('nombre', { transform: (v: string | undefined) => v || 'nombre' });
+  readonly dir = input('asc' as 'asc' | 'desc', { transform: (v: 'asc' | 'desc' | undefined) => v || 'asc' });
   readonly categoriaId = input<string>();
-  // Estado de la consulta paginada
-  protected readonly pagina = signal(0);
-  protected readonly tamanio = signal(10);
-  protected readonly ordenarPor = signal<OrdenProducto>('nombre');
-  protected readonly direccion = signal<Direccion>('asc');
-
-  protected readonly resultado = signal<PaginaResponse<Producto> | null>(null);
   protected readonly categorias = signal<Categoria[]>([]);
-  protected readonly categoriaFiltro = signal<number | null>(null);
-  protected readonly cargando = signal(false);
-  protected readonly error = signal<string | null>(null);
-
-  /** Filtra por categoría los productos de la página actual. */
-  protected readonly productos = computed(() => {
-    const filtro = this.categoriaFiltro();
-    const lista = this.resultado()?.contenido ?? [];
-    return filtro === null ? lista : lista.filter(p => p.categoriaId === filtro);
+  protected readonly errorAccion = signal<string | null>(null);
+  protected readonly productos = rxResource({
+    params: () => ({ pagina: this.pagina(), tamanio: this.tamanio(), ordenarPor: this.orden(), direccion: this.dir(), categoriaId: Number(this.categoriaId()) || undefined }),
+    stream: ({ params }) => this.productoService.listar(params, params.categoriaId),
   });
-
-  ngOnInit(): void {
-    const categoriaId = Number(this.categoriaId());
-    if (Number.isInteger(categoriaId) && categoriaId > 0) { this.categoriaFiltro.set(categoriaId); this.tamanio.set(100); }
-    this.categoriaService.listar().subscribe({
-      next: datos => this.categorias.set(datos),
-      error: (err: HttpErrorResponse) => this.error.set(mensajeError(err)),
+  protected readonly pag = linkedSignal<Pagina<Producto> | undefined, Pagina<Producto> | undefined>({
+    source: () => this.productos.hasValue() ? this.productos.value() : undefined,
+    computation: (nueva, previa) => nueva ?? previa?.value,
+  });
+  constructor() {
+    this.categoriaService.listar().pipe(takeUntilDestroyed()).subscribe({
+      next: datos => this.categorias.set(datos), error: err => this.errorAccion.set(mensajeError(err)),
     });
-    this.cargar();
   }
-
-  cargar(): void {
-    this.cargando.set(true);
-    this.error.set(null);
-    this.productoService
-      .listar(this.pagina(), this.tamanio(), this.ordenarPor(), this.direccion())
-      .subscribe({
-        next: pagina => {
-
-
-          this.resultado.set(pagina);
-          this.cargando.set(false);
-        },
-        error: (err: HttpErrorResponse) => {
-          this.error.set(mensajeError(err));
-          this.cargando.set(false);
-        },
-      });
+  protected error(): string | null {
+    return this.errorAccion() ?? (this.productos.error() ? mensajeError(this.productos.error() as HttpErrorResponse) : null);
   }
-
-  irA(pagina: number): void {
-    this.pagina.set(pagina);
-    this.cargar();
+  protected irAPagina(pagina: number): void { this.navegar({ pagina }); }
+  protected cambiarTamanio(tamanio: number): void { this.navegar({ tamanio, pagina: 0 }); }
+  protected ordenarPor(campo: string): void {
+    const dir = this.orden() === campo && this.dir() === 'asc' ? 'desc' : 'asc';
+    this.navegar({ orden: campo, dir, pagina: 0 });
   }
-
-  cambiarTamanio(valor: string): void {
-    this.tamanio.set(Number(valor));
-    this.irA(0);
+  protected filtrarPorCategoria(valor: string): void { this.navegar({ categoriaId: valor || null, pagina: 0 }); }
+  private navegar(cambios: Record<string, string | number | null>): void {
+    this.router.navigate([], { queryParams: cambios, queryParamsHandling: 'merge' });
   }
-
-  ordenar(campo: OrdenProducto): void {
-    if (this.ordenarPor() === campo) {
-      this.direccion.update(d => (d === 'asc' ? 'desc' : 'asc'));
-    } else {
-      this.ordenarPor.set(campo);
-      this.direccion.set('asc');
-    }
-    this.irA(0);
-  }
-
-  filtrarPorCategoria(valor: string): void {
-    this.categoriaFiltro.set(valor ? Number(valor) : null);
-  }
-
-  darDeBaja(producto: Producto): void {
-    if (!confirm(`¿Dar de baja el producto "${producto.nombre}"?`)) {
-      return;
-    }
+  protected darDeBaja(producto: Producto): void {
+    if (!confirm(`¿Dar de baja el producto "${producto.nombre}"?`)) return;
     this.productoService.darDeBaja(producto.id).subscribe({
-      next: () => this.cargar(),
-      error: (err: HttpErrorResponse) => this.error.set(mensajeError(err)),
+      next: () => this.productos.reload(), error: err => this.errorAccion.set(mensajeError(err)),
     });
   }
 }
