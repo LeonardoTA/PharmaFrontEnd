@@ -1,4 +1,6 @@
 export interface Cliente {
+  creadoPor?: string;
+  modificadoPor?: string;
   id: number;
   dni: string;
   nombres: string;

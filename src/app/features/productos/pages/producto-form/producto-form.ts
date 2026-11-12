@@ -23,6 +23,8 @@ export class ProductoForm implements OnInit {
   private readonly router = inject(Router);
 
   readonly id = input<string>();
+  protected readonly creadoPor = signal<string | null>(null);
+  protected readonly modificadoPor = signal<string | null>(null);
 
   protected readonly categorias = signal<Categoria[]>([]);
   protected readonly categoriaOriginal = signal<number | null>(null);
@@ -71,6 +73,8 @@ Validators.pattern(/^\d+$/)]),
         producto: this.productoService.obtener(Number(id)),
       }).subscribe({
         next: ({ categorias, producto }) => {
+          this.creadoPor.set(producto.creadoPor ?? null);
+          this.modificadoPor.set(producto.modificadoPor ?? null);
           this.categorias.set(categorias);
           this.categoriaOriginal.set(producto.categoriaId);
           this.form.setValue({

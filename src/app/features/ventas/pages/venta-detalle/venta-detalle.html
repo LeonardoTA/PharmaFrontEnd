@@ -23,6 +23,7 @@
 
         <dl class="datos">
           <div><dt>Fecha</dt><dd>{{ v.fecha | date: 'dd/MM/yyyy HH:mm' }}</dd></div>
+          @if (v.creadoPor) { <div><dt>Registrado por</dt><dd>{{ v.creadoPor }}</dd></div> }
           <div><dt>Cliente</dt><dd>{{ v.clienteNombre }}</dd></div>
           @if (cliente(); as c) {
             <div><dt>DNI</dt><dd>{{ c.dni }}</dd></div>

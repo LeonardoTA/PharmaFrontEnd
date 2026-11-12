@@ -13,6 +13,7 @@
       <a routerLink="/categorias/nuevo" class="btn btn-primary">Nueva categoría</a>
     </div>
   } @else {
+    @if (creadoPor()) { <p class="nota">Creado por {{ creadoPor() }} · Modificado por {{ modificadoPor() || creadoPor() }}</p> }
     <form [formGroup]="form" (ngSubmit)="guardar()" class="card formulario">
       <label>
         Categoría

@@ -11,6 +11,7 @@ export interface DetalleVenta {
 
 /** Cabecera con sus detalles (VentaResponseDTO). */
 export interface Venta {
+  creadoPor?: string;
   id: number;
   fecha: string;
   clienteId: number;
