@@ -9,8 +9,9 @@ test('flujo principal: el vendedor registra una venta y el stock baja', async ({
   await page.getByTestId('buscar-cliente').fill('Mamani');
   await page.getByTestId('opcion-cliente').first().click();
   // Producto: se lee el stock antes de vender
-  await page.getByTestId('buscar-producto').fill('Paracetamol');
-  const opcion = page.getByTestId('opcion-producto').first();
+  const nombreProducto = process.env['E2E_PRODUCTO'] || 'Paracetamol 500 mg';
+  await page.getByTestId('buscar-producto').fill(nombreProducto);
+  const opcion = page.getByTestId('opcion-producto').filter({ has: page.getByText(nombreProducto, { exact: true }) });
   const stockAntes = Number(await opcion.getAttribute('data-stock'));
   await opcion.click();
   await page.getByTestId('cantidad').last().fill('2');
@@ -28,8 +29,7 @@ test('flujo principal: el vendedor registra una venta y el stock baja', async ({
   await page.getByRole('link', { name: /Productos/ }).click();
   const fila = page
     .getByTestId('tabla-productos')
-    .locator('tr', { hasText: 'Paracetamol' })
-    .first();
+    .locator('tbody tr').filter({ has: page.getByRole('cell', { name: nombreProducto, exact: true }) });
   await expect(fila.locator('td').nth(3)).toHaveText(String(stockAntes - 2));
 });
 
