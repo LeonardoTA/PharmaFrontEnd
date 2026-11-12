@@ -1,1 +1,5 @@
-export const environment = { production: true, apiUrl: 'http://localhost:8081/api/v1', fechaVenta: 'fechaRegistro' } as const;
+export const environment = {
+  production: true,
+  apiUrl: '/api/v1',
+  fechaVenta: 'fechaRegistro'
+};

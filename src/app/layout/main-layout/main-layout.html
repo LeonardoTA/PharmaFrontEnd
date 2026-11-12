@@ -3,12 +3,15 @@
     <button type="button" class="menu-toggle" (click)="mostrarMenu.update(v => !v)" aria-label="Mostrar u ocultar menú" [attr.aria-expanded]="mostrarMenu()">☰</button>
     <a routerLink="/inicio" class="marca">PharmaSoft</a>
     <nav aria-label="Navegación principal"><a routerLink="/inicio">Inicio</a><a [href]="swaggerUrl" target="_blank" rel="noopener">API</a></nav>
-    <span class="usuario">Invitado</span>
+    @if (auth.sesion(); as s) {
+      <div class="usuario"><span class="nombre">{{ s.nombreCompleto }} · <a routerLink="/mi-cuenta">Mi cuenta</a></span><span class="detalle">{{ s.roles.join(' · ') }} · expira {{ s.expiraEn | date: 'HH:mm' }}</span></div>
+      <button type="button" class="btn-salir" (click)="salir()">Cerrar sesión</button>
+    }
   </header>
   <aside class="area-sidebar"><p>MÓDULOS</p><nav aria-label="Módulos">
-    @for (item of menu; track item.ruta) {
+    @for (item of menu(); track item.ruta) {
       <a [routerLink]="item.ruta" routerLinkActive="activo" [routerLinkActiveOptions]="{ exact: item.ruta === '/inicio' }"><span>{{ item.icono }}</span> {{ item.etiqueta }}</a>
     }
   </nav></aside>
-  <main class="area-main"><router-outlet /></main>
+  <main class="area-main"><app-aviso-sesion /><router-outlet /></main>
 </div>

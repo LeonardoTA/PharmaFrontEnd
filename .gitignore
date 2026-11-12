@@ -42,3 +42,7 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Resultados locales con trazas y videos de diagnóstico.
+/playwright-report/
+/test-results/

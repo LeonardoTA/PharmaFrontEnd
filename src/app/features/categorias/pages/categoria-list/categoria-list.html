@@ -1,9 +1,9 @@
-<section class="page"><header class="page-header"><h2>Categorías</h2><a class="btn btn-primary" routerLink="nuevo">+ Nueva categoría</a></header>
+<section class="page"><header class="page-header"><h2>Categorías</h2><a *appSiPermiso="'CATALOGO_ESCRIBIR'" class="btn btn-primary" routerLink="nuevo">+ Nueva categoría</a></header>
 @if (error()) { <div class="alerta" role="alert">{{ error() }}</div> }
 @if (cargando()) { <p>Cargando categorías…</p> } @else {
-<table class="tabla"><thead><tr><th>Nombre</th><th>Descripción</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>
+<table class="tabla"><thead><tr><th>Nombre</th><th>Descripción</th><th>Estado</th><th *appSiPermiso="'CATALOGO_ESCRIBIR'">Acciones</th></tr></thead><tbody>
 @for (c of categorias(); track c.id) { <tr><td>{{ c.nombre }}</td><td>{{ c.descripcion || '—' }}</td><td><span class="badge" [class.inactivo]="!c.estado">{{ c.estado ? 'Activo' : 'Inactivo' }}</span></td>
-<td><div class="acciones"><a class="btn" [routerLink]="[c.id, 'editar']">Editar</a>
+<td *appSiPermiso="'CATALOGO_ESCRIBIR'"><div class="acciones"><a class="btn" [routerLink]="[c.id, 'editar']">Editar</a>
 <a class="btn" [routerLink]="'/productos'" [queryParams]="{ categoriaId: c.id }">Ver productos</a>
 <button class="btn btn-peligro" type="button" (click)="eliminar(c)">Eliminar</button></div></td></tr>
 } @empty { <tr><td colspan="4" class="vacio">No hay categorías.</td></tr> }

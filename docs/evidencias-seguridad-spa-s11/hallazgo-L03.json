@@ -1,0 +1,12 @@
+{
+  "id": "L-03",
+  "fecha": "25/10/2026",
+  "peticionesObservadas": 2,
+  "esperado": 1,
+  "severidad": "Media",
+  "evidence": "L-03_inicial.png",
+  "archivo": "src/app/features/auth/pages/login/login.ts",
+  "metodo": "ingresar",
+  "causa": "El estado enviando no se verifica al entrar al método; el binding disabled puede actualizarse después del segundo clic.",
+  "correccion": "Retornar inmediatamente si enviando() es verdadero."
+}
