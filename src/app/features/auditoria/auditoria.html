@@ -1,0 +1,19 @@
+<section class="page">
+  <header class="page-header"><h2>Auditoría</h2></header>
+  <form class="card filtros" [formGroup]="filtros" (ngSubmit)="buscar()">
+    <label>Usuario<input class="input" formControlName="usuario" /></label>
+    <label>Acción<select aria-label="Acción" class="input" formControlName="accion"><option value="">Todas</option>@for(a of acciones; track a) { <option [value]="a">{{ a }}</option> }</select></label>
+    <label>Desde<input class="input" type="date" formControlName="desde" /></label>
+    <label>Hasta<input class="input" type="date" formControlName="hasta" /></label>
+    <div class="acciones"><button type="button" class="btn" (click)="limpiar()">Limpiar</button><button class="btn btn-primary" type="submit">Buscar</button></div>
+  </form>
+  @if(error()) { <p class="alerta" role="alert">{{ error() }}</p> }
+  @if(eventos.isLoading()) { <p role="status">Cargando eventos…</p> }
+  @if(pag(); as p) {
+    <table class="tabla" data-testid="tabla-auditoria"><thead><tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Entidad</th><th>ID</th><th>Detalle</th><th>Request ID</th></tr></thead><tbody>
+      @for(e of p.contenido; track e.id) { <tr><td>{{ e.fecha | date:'dd/MM/yyyy HH:mm:ss' }}</td><td>{{ e.usuario }}</td><td>{{ e.accion }}</td><td>{{ e.entidad }}</td><td>{{ e.entidadId ?? '—' }}</td><td>{{ e.detalle || '—' }}</td><td>{{ e.requestId || '—' }}</td></tr> }
+      @empty { <tr><td colspan="7">No hay eventos con esos filtros.</td></tr> }
+    </tbody></table>
+    <app-paginador [pagina]="p.pagina" [tamanio]="p.tamanio" [totalPaginas]="p.totalPaginas" [totalElementos]="p.totalElementos" (cambioPagina)="ir($event)" (cambioTamanio)="cambiarTamanio($event)" />
+  }
+</section>
