@@ -1,5 +1,7 @@
 # PharmaFrontend — SPA de PharmaSoft
 
+Actividad autónoma S14: [informe e índice](docs/README.md). Etiqueta de entrega: v1.0-demo; 12 casos E2E, 36/36 ejecuciones aprobadas. Los registros personales pendientes se detallan en el índice.
+
 Aplicación Web de Página Única (SPA) para la gestión de ventas y farmacia desarrollada con Angular 19+ (signals, control flow `@if` / `@for`, `@defer`, standalone components y lazy routing).
 
 ---
